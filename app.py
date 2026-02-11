@@ -19,48 +19,37 @@ def check_port(ip_port):
         return result == 0, target_port
     except: return False, 80
 
-# 3. BASE DE DADOS COMPLETA (Com campos técnicos: IP, Máscara, Gateway, PPPoE)
-# Padrão: "Nome": [MCU, WAN1_DADOS, WAN2_DADOS]
-# WAN_DADOS: {"op": "Nome", "tipo": "FIXO/PPPoE", "ip": "0.0.0.0", "mask": "255...", "gw": "0.0.0.0", "user": "", "pass": ""}
-
+# 3. BASE DE DADOS COMPLETA (Todas as agências da Ftek)
 dados_agencias = {
-    "Agf Itaberába": {
-        "mcu": "00423154",
-        "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"},
-        "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}
-    },
-    "Agf Cidade Dutra": {
-        "mcu": "423152",
-        "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"},
-        "wan2": {"op": "OFF", "tipo": "FIXO", "ip": "0.0.0.0"}
-    },
-    "Agf Vieira de Morais": {
-        "mcu": "423153",
-        "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.145.30", "mask": "255.255.255.0", "gw": "201.6.145.1"},
-        "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.47.132.55", "user": "gvt25", "pass": "1133602736"}
-    },
-    "Agf Lajeado": {
-        "mcu": "00424526",
-        "wan1": {"op": "Tim", "tipo": "FIXO", "ip": "177.149.87.18", "mask": "255.255.255.0", "gw": "0.0.0.0"},
-        "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.247.247", "mask": "255.255.255.0", "gw": "201.6.247.247"}
-    },
-    "Agf Barra Funda": {
-        "mcu": "00424371",
-        "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"},
-        "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}
-    },
-    "Agf Mandaqui": {
-        "mcu": "00236565",
-        "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.69.120.142", "user": "cliente@cliente", "pass": "cliente"},
-        "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.216", "mask": "255.255.255.0", "gw": "201.6.98.216"}
-    }
-    # Para adicionar mais, mantenha este formato de WAN1 e WAN2
+    "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
+    "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
+    "Agf Vieira de Morais": {"mcu": "423153", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.145.30", "mask": "255.255.255.0", "gw": "201.6.145.1"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.47.132.55", "user": "gvt25", "pass": "1133602736"}},
+    "Agf Lajeado": {"mcu": "00424526", "wan1": {"op": "Tim", "tipo": "FIXO", "ip": "177.149.87.18", "mask": "255.255.255.0", "gw": "0.0.0.0"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.247.247", "mask": "255.255.255.0", "gw": "201.6.247.247"}},
+    "Agf Conceição": {"mcu": "00424406", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "191.209.82.3", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.103.146", "mask": "255.255.255.0", "gw": "201.6.103.1"}},
+    "Agf Figueira Grande": {"mcu": "00424493", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "189.46.28.31", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Telion", "tipo": "FIXO", "ip": "200.155.182.26", "mask": "255.255.255.252 /30", "gw": "200.155.182.25"}},
+    "Agf Morumbi": {"mcu": "00424493", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.100.138", "mask": "255.255.255.0", "gw": "201.6.100.1"}, "wan2": {"op": "Vivo Lp", "tipo": "FIXO", "ip": "187.92.219.146", "mask": "255.255.255.0 /29", "gw": "187.92.219.145"}},
+    "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
+    "Agf Perus": {"mcu": "00424325", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.103.179.54", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Conecta", "tipo": "PPPoE", "ip": "45.164.78.96", "user": "pretacao.ltda", "pass": "Conecta01"}},
+    "Agf Pirituba": {"mcu": "0000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.170.55.64", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.113.34", "mask": "255.255.255.0", "gw": "201.6.113.1"}},
+    "Agf Vila dos Remédios": {"mcu": "00424302", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "187.122.100.70", "mask": "255.255.255.0", "gw": "187.122.100.1"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "191.8.246.181", "user": "cliente@cliente", "pass": "cliente"}},
+    "Agf São Roberto": {"mcu": "00424435", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "187.122.101.223", "mask": "255.255.255.0", "gw": "187.122.101.1"}, "wan2": {"op": "Algar", "tipo": "PPPoE", "ip": "187.72.251.252", "user": "09091605", "pass": "12345678"}},
+    "Agf Maria Candida": {"mcu": "00000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.118.90", "mask": "255.255.255.0", "gw": "201.6.118.90"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.68.158.15", "user": "cliente@cliente", "pass": "cliente"}},
+    "Agf Shopppin C. Limpo": {"mcu": "00423129", "wan1": {"op": "America Net", "tipo": "PPPoE", "ip": "201.46.24.84:1010", "user": "A690972280003@sp.spo", "pass": "hghs11vvt7w9"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.133.110:1010", "user": "cliente@cliente", "pass": "cliente"}},
+    "Agf Silvio Romero": {"mcu": "00000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.252.169", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.126.99", "mask": "255.255.255.0", "gw": "201.6.126.1"}},
+    "Agf Mandaqui": {"mcu": "00236565", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.69.120.142", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.216", "mask": "255.255.255.0", "gw": "201.6.98.216"}},
+    "Agf Santa Cruz": {"mcu": "0000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "200.148.80.137", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.117.250", "mask": "255.255.255.0", "gw": "201.6.117.1"}},
+    "Agf Britania": {"mcu": "00236543", "wan1": {"op": "Globa Tel", "tipo": "PPPoE", "ip": "123.45.67.89", "user": "2630@globaltel.com.br", "pass": "cliente"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.147.205", "user": "cliente@cliente", "pass": "cliente"}},
+    "Agf Engenho Novo": {"mcu": "00424438", "wan1": {"op": "Algar", "tipo": "FIXO", "ip": "177.69.251.66", "mask": "255.255.255.248", "gw": "177.69.251.70"}, "wan2": {"op": "Vivo", "tipo": "FIXO", "ip": "189.44.74.226", "mask": "255.255.255.248", "gw": "189.44.74.225"}},
+    "Agf Vila Prell": {"mcu": "0000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "191.13.249.195", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.157.195", "mask": "255.255.255.0", "gw": "201.6.157.195"}},
+    "Agf Estados Unidos": {"mcu": "00236533", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "191.8.183.152", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.130.46", "mask": "255.255.255.252", "gw": "201.6.130.45"}},
+    "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}}
 }
 
 # 4. MENU LATERAL (Sidebar)
 st.sidebar.title("🚀 Navegação Ftek")
 agencia_sel = st.sidebar.selectbox("Selecione a Agência:", sorted(dados_agencias.keys()))
 info = dados_agencias[agencia_sel]
+st.sidebar.divider()
 st.sidebar.info(f"🆔 MCU: {info['mcu']}")
 
 # 5. CONTEÚDO PRINCIPAL
@@ -68,16 +57,14 @@ st.markdown(f"<h3 style='text-align: center;'>Painel Operacional: {agencia_sel}<
 col1, col2 = st.columns(2)
 
 def montar_card(dados, titulo, chave, cor):
-    if not dados or dados.get('ip') == "0.0.0.0": return
+    if not dados: return
     with st.container(border=True):
         status, porta = check_port(dados.get('ip', '0.0.0.0'))
         st.subheader(f"{titulo} ({dados.get('op', 'Link')})")
         st.write(f"Status: **{'✅ ONLINE' if status else '❌ OFFLINE'}** (Porta: {porta})")
         
-        # Campo de IP
         ip_val = st.text_input(f"Technical IP Address ({titulo})", value=dados.get('ip', '0.0.0.0'), key=f"ip_{chave}_{agencia_sel}")
         
-        # Lógica para mostrar campos PPPoE ou FIXO (Mascara/Gateway)
         if dados.get('tipo') == "PPPoE":
             st.text_input("User (Usuário PPPoE)", value=dados.get('user', ''), key=f"u_{chave}_{agencia_sel}")
             st.text_input("Password (Senha PPPoE)", value=dados.get('pass', ''), type="password", key=f"p_{chave}_{agencia_sel}")
