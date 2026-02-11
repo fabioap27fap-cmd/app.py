@@ -59,7 +59,7 @@ dados_agencias = {
     "Agf Clodomiro Amazonas": {"mcu": "00424440", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "152.250.250.69", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.238.122", "mask": "255.255.255.0 /24", "gw": "201.6.238.1"}},
     "Agf Geovani Gronchi": {"mcu": "00424884", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.127.82", "mask": "255.255.255.0 /24", "gw": "201.6.127.1"}},
     "Agf Campo Grande": {"mcu": "00424450", "wan1": {"op": "Vivo Lp", "tipo": "FIXO", "ip": "189.109.212.18", "mask": "255.255.255.248", "gw": "189.109.212.17"}, "wan2": {"op": "Algar", "tipo": "FIXO", "ip": "177.69.127.110", "mask": "255.255.255.252", "gw": "177.69.127.109"}},
-    "Agf São Jorge Noelita": {"mcu": "00424313", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6..119.15", "mask": "255.255.255.0", "gw": "201.6.103.1/24"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "191.7.157.252", "user": "correios", "pass": "123"}},
+    "Agf São Jorge Noelita": {"mcu": "00424313", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.119.15", "mask": "255.255.255.0 /24", "gw": "201.6.103.1/24"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "191.7.157.252", "user": "correios", "pass": "123"}},
     "Agf Silvio Romero": {"mcu": "00424460", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.252.169", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.126.99", "mask": "255.255.255.0", "gw": "201.6.126.1"}}
 }
 
