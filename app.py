@@ -23,15 +23,15 @@ def check_port(ip_port, manual_port=None):
         return result == 0, target_port
     except: return False, 80
 
-# 3. BASE DE DADOS COMPLETA (37 Unidades - Corrigido erro São Jorge Ponto Remoto)
+# 3. BASE DE DADOS COMPLETA (39 Unidades cadastradas pela Ftek)
 dados_agencias = {
     "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
     "Agf Vieira de Morais": {"mcu": "423153", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.145.30", "mask": "255.255.255.0", "gw": "201.6.145.1"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.47.132.55", "user": "gvt25", "pass": "1133602736"}},
     "Agf Lajeado": {"mcu": "00424526", "wan1": {"op": "Tim", "tipo": "FIXO", "ip": "177.149.87.18", "mask": "255.255.255.0", "gw": "0.0.0.0"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.247.247", "mask": "255.255.255.0", "gw": "201.6.247.247"}},
     "Agf Conceição": {"mcu": "00424406", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "191.209.82.3", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.103.146", "mask": "255.255.255.0", "gw": "201.6.103.1"}},
-    "Agf Figueira Grande": {"mcu": "00424493", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "189.46.28.31", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Telion", "tipo": "FIXO", "ip": "200.155.182.26", "mask": "255.255.255.252 /30", "gw": "200.155.182.25"}},
-    "Agf Morumbi": {"mcu": "00424493", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.100.138", "mask": "255.255.255.0", "gw": "201.6.100.1"}, "wan2": {"op": "Vivo Lp", "tipo": "FIXO", "ip": "187.92.219.146", "mask": "255.255.255.0 /29", "gw": "187.92.219.145"}},
+    "Agf Figueira Grande": {"mcu": "00424493", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "189.46.28.31", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Telion", "tipo": "FIXO", "ip": "200.155.182.26", "mask": "255.255.255.252", "gw": "200.155.182.25"}},
+    "Agf Morumbi": {"mcu": "00424493", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.100.138", "mask": "255.255.255.0", "gw": "201.6.100.1"}, "wan2": {"op": "Vivo Lp", "tipo": "FIXO", "ip": "187.92.219.146", "mask": "255.255.255.0", "gw": "187.92.219.145"}},
     "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
     "Agf Bonfiglioli Ponto Remoto": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.132.189", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Perus": {"mcu": "00424325", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.103.179.54", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Conecta", "tipo": "PPPoE", "ip": "45.164.78.96", "user": "pretacao.ltda", "pass": "Conecta01"}},
