@@ -4,10 +4,13 @@ import socket
 # 1. Configuração da Página
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Checa portas do Link e do Winbox)
-def check_port(ip_port, manual_port=None):
+# 2. FUNÇÃO DE MONITORAMENTO (Link, Winbox e Internet 8.8.8.8)
+def check_port(ip_port, manual_port=None, external_test=False):
     try:
-        if manual_port:
+        # Se for teste de internet externa (8.8.8.8)
+        if external_test:
+            target_ip, target_port = "8.8.8.8", 53 # Porta do DNS
+        elif manual_port:
             target_port = manual_port
             target_ip = ip_port.split(":")[0] if ":" in ip_port else ip_port
         elif ":" in ip_port:
@@ -82,10 +85,12 @@ def montar_card(dados, titulo, chave, cor):
     with st.container(border=True):
         status_ok, porta_teste = check_port(dados.get('ip', '0.0.0.0'))
         winbox_ok, _ = check_port(dados.get('ip', '0.0.0.0'), manual_port=8291)
+        internet_ok, _ = check_port(dados.get('ip', '0.0.0.0'), external_test=True) # Novo teste de Internet
         
         st.subheader(f"{titulo} ({dados.get('op', 'Link')})")
-        st.write(f"Link: **{'✅ ONLINE' if status_ok else '❌ OFFLINE'}** (Porta: {porta_teste})")
-        st.write(f"Winbox: **{'✅ ACESSO OK' if winbox_ok else '❌ SEM ACESSO'}** (Porta: 8291)")
+        st.write(f"Link Operadora: **{'✅ ONLINE' if status_ok else '❌ OFFLINE'}** (Porta: {porta_teste})")
+        st.write(f"Winbox MikroTik: **{'✅ ACESSO OK' if winbox_ok else '❌ SEM ACESSO'}** (Porta: 8291)")
+        st.write(f"Internet (Google): **{'✅ COM NAVEGAÇÃO' if internet_ok else '❌ SEM NAVEGAÇÃO'}** (Porta: 53)")
         
         ip_val = st.text_input(f"Technical IP Address ({titulo})", value=dados.get('ip', '0.0.0.0'), key=f"ip_{chave}_{agencia_sel}")
         
