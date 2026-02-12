@@ -25,7 +25,7 @@ def check_port(ip_port, manual_port=None, external_test=False):
         return result == 0, target_port
     except: return False, 80
 
-# 3. BASE DE DADOS ATUALIZADA (41 Unidades - INCLUINDO AGF CLINICAS)
+# 3. BASE DE DADOS COMPLETA (Revisada e Corrigida)
 dados_agencias = {
     "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
@@ -91,3 +91,21 @@ def montar_card(dados, titulo, chave, cor):
         st.subheader(f"{titulo} ({dados.get('op', 'Link')})")
         st.write(f"Link Operadora: **{'✅ ONLINE' if status_ok else '❌ OFFLINE'}** (Porta: {porta_teste})")
         st.write(f"Winbox MikroTik: **{'✅ ACESSO OK' if winbox_ok else '❌ SEM ACESSO'}** (Porta: 8291)")
+        st.write(f"Internet (Google): **{'✅ COM NAVEGAÇÃO' if internet_ok else '❌ SEM NAVEGAÇÃO'}** (Porta: 53)")
+        
+        ip_val = st.text_input(f"Technical IP Address ({titulo})", value=dados.get('ip', '0.0.0.0'), key=f"ip_{chave}_{agencia_sel}")
+        
+        if dados.get('tipo') == "PPPoE":
+            st.text_input("User (Usuário PPPoE)", value=dados.get('user', ''), key=f"u_{chave}_{agencia_sel}")
+            st.text_input("Password (Senha PPPoE)", value=dados.get('pass', ''), type="password", key=f"p_{chave}_{agencia_sel}")
+        else:
+            st.text_input("Subnet Mask (Máscara)", value=dados.get('mask', '255.255.255.0'), key=f"m_{chave}_{agencia_sel}")
+            st.text_input("Gateway (Gateway)", value=dados.get('gw', '0.0.0.0'), key=f"g_{chave}_{agencia_sel}")
+        
+        st.link_button(f"{cor} Abrir Unidade", f"http://{ip_val}", use_container_width=True)
+
+with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
+with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
+
+st.divider()
+st.caption("Ftek Tecnologia - Suporte Especializado MikroTik")
