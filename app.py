@@ -1,31 +1,45 @@
 import streamlit as st
 import socket
+import time
 
 # 1. Configuração da Página
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Link, Winbox e Internet 8.8.8.8)
+# 2. FUNÇÃO DE MONITORAMENTO TURBINADA (Com Retry Logic)
 def check_port(ip_port, manual_port=None, external_test=False):
-    try:
-        if external_test:
-            target_ip, target_port = "8.8.8.8", 53 
-        elif manual_port:
-            target_port = manual_port
-            target_ip = ip_port.split(":")[0] if ":" in ip_port else ip_port
-        elif ":" in ip_port:
+    """
+    Tenta conectar ao IP. Se falhar, tenta mais 2 vezes automaticamente 
+    antes de dar o erro, resolvendo o problema de ter que clicar 5 vezes.
+    """
+    if external_test:
+        target_ip, target_port = "8.8.8.8", 53
+    elif manual_port:
+        target_port = manual_port
+        target_ip = ip_port.split(":")[0] if ":" in ip_port else ip_port
+    elif ":" in ip_port:
+        try:
             target_ip, target_port = ip_port.split(":")
             target_port = int(target_port)
-        else:
-            target_ip, target_port = ip_port, 80 
-            
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1.2) 
-        result = s.connect_ex((target_ip, target_port))
-        s.close()
-        return result == 0, target_port
-    except: return False, 80
+        except: return False, 80
+    else:
+        target_ip, target_port = ip_port, 80
 
-# 3. BASE DE DADOS COMPLETA (Revisada e Corrigida)
+    # LÓGICA DE RE-TENTATIVA (Retry)
+    for i in range(3): 
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # Aumentamos o timeout para 2.5s para dar tempo do link responder
+            s.settimeout(2.5 if i == 0 else 4.0) 
+            result = s.connect_ex((target_ip, target_port))
+            s.close()
+            if result == 0:
+                return True, target_port
+            time.sleep(0.5) # Pausa rápida entre tentativas
+        except:
+            continue
+    return False, target_port
+
+# 3. BASE DE DADOS COMPLETA (FTEK - NUNCA REMOVER PONTOS REMOTOS)
 dados_agencias = {
     "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
@@ -42,7 +56,6 @@ dados_agencias = {
     "Agf São Roberto": {"mcu": "00424435", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "187.122.101.223", "mask": "255.255.255.0", "gw": "187.122.101.1"}, "wan2": {"op": "Algar", "tipo": "PPPoE", "ip": "187.72.251.252", "user": "09091605", "pass": "12345678"}},
     "Agf Maria Candida": {"mcu": "00424400", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.118.90", "mask": "255.255.255.0", "gw": "201.6.118.90"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.68.158.15", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Shopppin C. Limpo": {"mcu": "00423129", "wan1": {"op": "America Net", "tipo": "PPPoE", "ip": "201.46.24.84:1010", "user": "A690972280003@sp.spo", "pass": "hghs11vvt7w9"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.133.110:1010", "user": "cliente@cliente", "pass": "cliente"}},
-    "Agf Silvio Romero": {"mcu": "00424350", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.252.169", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.126.99", "mask": "255.255.255.0", "gw": "201.6.126.1"}},
     "Agf Mandaqui": {"mcu": "00236565", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.69.120.142", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.216", "mask": "255.255.255.0", "gw": "201.6.98.216"}},
     "Agf Santa Cruz": {"mcu": "00424360", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "200.148.80.137", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.117.250", "mask": "255.255.255.0", "gw": "201.6.117.1"}},
     "Agf Britania": {"mcu": "00236543", "wan1": {"op": "Globa Tel", "tipo": "PPPoE", "ip": "138.97.242.43", "user": "2630@globaltel.com.br", "pass": "12345678"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.147.205", "user": "cliente@cliente", "pass": "cliente"}},
@@ -60,7 +73,7 @@ dados_agencias = {
     "Agf Piratininga": {"mcu": "00424430", "wan1": {"op": "Conecta", "tipo": "PPPoE", "ip": "200.201.138.141:1010", "user": "cliente@cliente", "pass": "jerimaduba372"}, "wan2": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.107.181:1010", "mask": "255.255.255.0", "gw": "187.122.106.195"}},
     "Agf Jaragua": {"mcu": "00424335", "wan1": {"op": "Vivo", "tipo": "PPPoE", "ip": "191.13.225.209", "user": "digita.post", "pass": "cliente"}, "wan2": {"op": "CLARO", "tipo": "FIXO", "ip": "187.122.106.195", "mask": "255.255.255.0", "gw": "201.6.107.1"}},
     "Agf Joao Dias": {"mcu": "0000000", "wan1": {"op": "Vivo", "tipo": "PPPoE", "ip": "179.111.200.4", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "CLARO", "tipo": "FIXO", "ip": "187.122.106.195", "mask": "255.255.255.0", "gw": "187.122.106.195"}},
-    "Agf Clodomiro Amazonas": {"mcu": "00424440", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "152.250.250.69", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.238.122", "mask": "255.255.255.0 /30", "gw": "201.6.238.1"}},
+    "Agf Clodomiro Amazonas": {"mcu": "00424440", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "152.250.250.69", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.238.122", "mask": "255.255.255.0", "gw": "201.6.238.1"}},
     "Agf Geovani Gronchi": {"mcu": "00424884", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.127.82", "mask": "255.255.255.0", "gw": "201.6.127.1"}},
     "Agf Vila Sonia": {"mcu": "00424435", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.100.11", "mask": "255.255.255.0", "gw": "201.6.100.1"}, "wan2": {"op": "Vivo", "tipo": "PPPoE", "ip": "187.35.124.176", "user": "Nat 192.168.15.200", "pass": "não tem"}},
     "Agf Ponto remoto Vila Sonia": {"mcu": "00424435", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.69.28.73", "user": "cliente@cliente", "pass": "cliente"}},
@@ -85,6 +98,7 @@ col1, col2 = st.columns(2)
 def montar_card(dados, titulo, chave, cor):
     if not dados: return
     with st.container(border=True):
+        # Aqui o status_ok já usa a nova lógica automática de 3 tentativas
         status_ok, porta_teste = check_port(dados.get('ip', '0.0.0.0'))
         winbox_ok, _ = check_port(dados.get('ip', '0.0.0.0'), manual_port=8291)
         internet_ok, _ = check_port(dados.get('ip', '0.0.0.0'), external_test=True)
@@ -109,4 +123,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - Suporte Especializado MikroTik")
+st.caption("Ftek Tecnologia - Suporte Especializado MikroTik (v3.0)")
