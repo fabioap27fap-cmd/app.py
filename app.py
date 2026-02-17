@@ -6,8 +6,10 @@ from concurrent.futures import ThreadPoolExecutor
 # 1. Configuração da Página
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Threading e Fast Timeout)
+# 2. FUNÇÃO DE MONITORAMENTO (Otimizada para não travar)
 def check_port(ip_port, manual_port=None, external_test=False):
+    if not ip_port or ip_port == "0.0.0.0":
+        return False, 80
     if external_test:
         target_ip, target_port = "8.8.8.8", 53
     elif manual_port:
@@ -21,17 +23,16 @@ def check_port(ip_port, manual_port=None, external_test=False):
     else:
         target_ip, target_port = ip_port, 80
 
-    for i in range(2): 
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1.5) 
-            result = s.connect_ex((target_ip, target_port))
-            s.close()
-            if result == 0: return True, target_port
-        except: continue
-    return False, target_port
+    # Timeout curto para o app entrar rápido
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1.0) 
+        result = s.connect_ex((target_ip, target_port))
+        s.close()
+        return (result == 0), target_port
+    except: return False, target_port
 
-# 3. BASE DE DADOS INTEGRAL - CONFERIDA UNIDADE POR UNIDADE
+# 3. BASE DE DADOS COMPLETA (FTEK - NÃO FALTA NENHUMA)
 dados_agencias = {
     "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
@@ -77,7 +78,7 @@ dados_agencias = {
     "Agf Silvio Romero": {"mcu": "00424460", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.252.169", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.126.99", "mask": "255.255.255.0", "gw": "201.6.126.1"}}
 }
 
-# 4. EXECUÇÃO PARALELA (Threading)
+# 4. EXECUÇÃO PARALELA (Threadpool)
 def run_all_checks(dados):
     if not dados: return None
     ip = dados.get('ip', '0.0.0.0')
@@ -87,10 +88,9 @@ def run_all_checks(dados):
         f3 = executor.submit(check_port, ip, external_test=True)
     return f1.result(), f2.result(), f3.result()
 
-# 5. SIDEBAR E NAVEGAÇÃO
+# 5. SIDEBAR
 st.sidebar.title("🚀 Navegação Ftek")
-agencias_lista = sorted(dados_agencias.keys())
-agencia_sel = st.sidebar.selectbox("Escolha a Agência:", agencias_lista)
+agencia_sel = st.sidebar.selectbox("Agência:", sorted(dados_agencias.keys()))
 info = dados_agencias[agencia_sel]
 st.sidebar.divider()
 st.sidebar.info(f"🆔 MCU: {info['mcu']}")
@@ -101,29 +101,28 @@ col1, col2 = st.columns(2)
 
 def montar_card(dados, titulo, chave, cor):
     if not dados: return
-    # Testes rodam sem travar os botões de Stop/Navegação
+    # Testes em tempo real ao selecionar a agência
     results = run_all_checks(dados)
-    (link_ok, p_teste), (winbox_ok, _), (internet_ok, _) = results
+    (link_ok, _), (winbox_ok, _), (internet_ok, _) = results
 
     with st.container(border=True):
-        st.subheader(f"{titulo} ({dados.get('op', 'Link')})")
+        st.subheader(f"{titulo} ({dados.get('op')})")
         st.write(f"Link Operadora: **{'✅ ONLINE' if link_ok else '❌ OFFLINE'}**")
         st.write(f"Winbox MikroTik: **{'✅ ACESSO OK' if winbox_ok else '❌ SEM ACESSO'}**")
         st.write(f"Internet (Google): **{'✅ NAVEGANDO' if internet_ok else '❌ SEM INTERNET'}**")
         
-        ip_val = st.text_input(f"IP Técnico ({titulo})", value=dados.get('ip', '0.0.0.0'), key=f"ip_{chave}_{agencia_sel}")
-        
+        st.text_input("IP Técnico", value=dados.get('ip'), key=f"ip_{chave}_{agencia_sel}")
         if dados.get('tipo') == "PPPoE":
-            st.text_input("Usuário", value=dados.get('user', ''), key=f"u_{chave}_{agencia_sel}")
-            st.text_input("Senha", value=dados.get('pass', ''), type="password", key=f"p_{chave}_{agencia_sel}")
+            st.text_input("Usuário", value=dados.get('user'), key=f"u_{chave}_{agencia_sel}")
+            st.text_input("Senha", value=dados.get('pass'), type="password", key=f"p_{chave}_{agencia_sel}")
         else:
-            st.text_input("Máscara", value=dados.get('mask', '255.255.255.0'), key=f"m_{chave}_{agencia_sel}")
-            st.text_input("Gateway", value=dados.get('gw', '0.0.0.0'), key=f"g_{chave}_{agencia_sel}")
+            st.text_input("Máscara", value=dados.get('mask'), key=f"m_{chave}_{agencia_sel}")
+            st.text_input("Gateway", value=dados.get('gw'), key=f"g_{chave}_{agencia_sel}")
         
-        st.link_button(f"{cor} Abrir Unidade", f"http://{ip_val}", use_container_width=True)
+        st.link_button(f"{cor} Abrir Interface", f"http://{dados.get('ip')}", use_container_width=True)
 
 with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v4.2 (Versão Blindada)")
+st.caption("Ftek Tecnologia - v5.0 (Versão Definitiva)")
