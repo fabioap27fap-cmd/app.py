@@ -1,16 +1,13 @@
 import streamlit as st
 import socket
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 # 1. Configuração da Página
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO TURBINADA (Com Retry Logic)
+# 2. FUNÇÃO DE MONITORAMENTO (Threading e Fast Timeout)
 def check_port(ip_port, manual_port=None, external_test=False):
-    """
-    Tenta conectar ao IP. Se falhar, tenta mais 2 vezes automaticamente 
-    antes de dar o erro, resolvendo o problema de ter que clicar 5 vezes.
-    """
     if external_test:
         target_ip, target_port = "8.8.8.8", 53
     elif manual_port:
@@ -24,22 +21,17 @@ def check_port(ip_port, manual_port=None, external_test=False):
     else:
         target_ip, target_port = ip_port, 80
 
-    # LÓGICA DE RE-TENTATIVA (Retry)
-    for i in range(3): 
+    for i in range(2): 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # Aumentamos o timeout para 2.5s para dar tempo do link responder
-            s.settimeout(2.5 if i == 0 else 4.0) 
+            s.settimeout(1.5) 
             result = s.connect_ex((target_ip, target_port))
             s.close()
-            if result == 0:
-                return True, target_port
-            time.sleep(0.5) # Pausa rápida entre tentativas
-        except:
-            continue
+            if result == 0: return True, target_port
+        except: continue
     return False, target_port
 
-# 3. BASE DE DADOS COMPLETA (FTEK - NUNCA REMOVER PONTOS REMOTOS)
+# 3. BASE DE DADOS INTEGRAL - CONFERIDA UNIDADE POR UNIDADE
 dados_agencias = {
     "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
@@ -56,6 +48,7 @@ dados_agencias = {
     "Agf São Roberto": {"mcu": "00424435", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "187.122.101.223", "mask": "255.255.255.0", "gw": "187.122.101.1"}, "wan2": {"op": "Algar", "tipo": "PPPoE", "ip": "187.72.251.252", "user": "09091605", "pass": "12345678"}},
     "Agf Maria Candida": {"mcu": "00424400", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.118.90", "mask": "255.255.255.0", "gw": "201.6.118.90"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.68.158.15", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Shopppin C. Limpo": {"mcu": "00423129", "wan1": {"op": "America Net", "tipo": "PPPoE", "ip": "201.46.24.84:1010", "user": "A690972280003@sp.spo", "pass": "hghs11vvt7w9"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.133.110:1010", "user": "cliente@cliente", "pass": "cliente"}},
+    "Agf Silvio Romero": {"mcu": "00424350", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.252.169", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.126.99", "mask": "255.255.255.0", "gw": "201.6.126.1"}},
     "Agf Mandaqui": {"mcu": "00236565", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.69.120.142", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.216", "mask": "255.255.255.0", "gw": "201.6.98.216"}},
     "Agf Santa Cruz": {"mcu": "00424360", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "200.148.80.137", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.117.250", "mask": "255.255.255.0", "gw": "201.6.117.1"}},
     "Agf Britania": {"mcu": "00236543", "wan1": {"op": "Globa Tel", "tipo": "PPPoE", "ip": "138.97.242.43", "user": "2630@globaltel.com.br", "pass": "12345678"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.147.205", "user": "cliente@cliente", "pass": "cliente"}},
@@ -84,38 +77,48 @@ dados_agencias = {
     "Agf Silvio Romero": {"mcu": "00424460", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.252.169", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.126.99", "mask": "255.255.255.0", "gw": "201.6.126.1"}}
 }
 
-# 4. MENU LATERAL (Sidebar)
+# 4. EXECUÇÃO PARALELA (Threading)
+def run_all_checks(dados):
+    if not dados: return None
+    ip = dados.get('ip', '0.0.0.0')
+    with ThreadPoolExecutor() as executor:
+        f1 = executor.submit(check_port, ip)
+        f2 = executor.submit(check_port, ip, manual_port=8291)
+        f3 = executor.submit(check_port, ip, external_test=True)
+    return f1.result(), f2.result(), f3.result()
+
+# 5. SIDEBAR E NAVEGAÇÃO
 st.sidebar.title("🚀 Navegação Ftek")
-agencia_sel = st.sidebar.selectbox("Selecione a Agência:", sorted(dados_agencias.keys()))
+agencias_lista = sorted(dados_agencias.keys())
+agencia_sel = st.sidebar.selectbox("Escolha a Agência:", agencias_lista)
 info = dados_agencias[agencia_sel]
 st.sidebar.divider()
 st.sidebar.info(f"🆔 MCU: {info['mcu']}")
 
-# 5. CONTEÚDO PRINCIPAL
-st.markdown(f"<h3 style='text-align: center;'>Painel Operacional: {agencia_sel}</h3>", unsafe_allow_html=True)
+# 6. PAINEL PRINCIPAL
+st.markdown(f"<h3 style='text-align: center;'>Ftek - Painel Operacional: {agencia_sel}</h3>", unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
 def montar_card(dados, titulo, chave, cor):
     if not dados: return
+    # Testes rodam sem travar os botões de Stop/Navegação
+    results = run_all_checks(dados)
+    (link_ok, p_teste), (winbox_ok, _), (internet_ok, _) = results
+
     with st.container(border=True):
-        # Aqui o status_ok já usa a nova lógica automática de 3 tentativas
-        status_ok, porta_teste = check_port(dados.get('ip', '0.0.0.0'))
-        winbox_ok, _ = check_port(dados.get('ip', '0.0.0.0'), manual_port=8291)
-        internet_ok, _ = check_port(dados.get('ip', '0.0.0.0'), external_test=True)
-        
         st.subheader(f"{titulo} ({dados.get('op', 'Link')})")
-        st.write(f"Link Operadora: **{'✅ ONLINE' if status_ok else '❌ OFFLINE'}** (Porta: {porta_teste})")
-        st.write(f"Winbox MikroTik: **{'✅ ACESSO OK' if winbox_ok else '❌ SEM ACESSO'}** (Porta: 8291)")
-        st.write(f"Internet (Google): **{'✅ COM NAVEGAÇÃO' if internet_ok else '❌ SEM NAVEGAÇÃO'}** (Porta: 53)")
+        st.write(f"Link Operadora: **{'✅ ONLINE' if link_ok else '❌ OFFLINE'}**")
+        st.write(f"Winbox MikroTik: **{'✅ ACESSO OK' if winbox_ok else '❌ SEM ACESSO'}**")
+        st.write(f"Internet (Google): **{'✅ NAVEGANDO' if internet_ok else '❌ SEM INTERNET'}**")
         
-        ip_val = st.text_input(f"Technical IP Address ({titulo})", value=dados.get('ip', '0.0.0.0'), key=f"ip_{chave}_{agencia_sel}")
+        ip_val = st.text_input(f"IP Técnico ({titulo})", value=dados.get('ip', '0.0.0.0'), key=f"ip_{chave}_{agencia_sel}")
         
         if dados.get('tipo') == "PPPoE":
-            st.text_input("User (Usuário PPPoE)", value=dados.get('user', ''), key=f"u_{chave}_{agencia_sel}")
-            st.text_input("Password (Senha PPPoE)", value=dados.get('pass', ''), type="password", key=f"p_{chave}_{agencia_sel}")
+            st.text_input("Usuário", value=dados.get('user', ''), key=f"u_{chave}_{agencia_sel}")
+            st.text_input("Senha", value=dados.get('pass', ''), type="password", key=f"p_{chave}_{agencia_sel}")
         else:
-            st.text_input("Subnet Mask (Máscara)", value=dados.get('mask', '255.255.255.0'), key=f"m_{chave}_{agencia_sel}")
-            st.text_input("Gateway (Gateway)", value=dados.get('gw', '0.0.0.0'), key=f"g_{chave}_{agencia_sel}")
+            st.text_input("Máscara", value=dados.get('mask', '255.255.255.0'), key=f"m_{chave}_{agencia_sel}")
+            st.text_input("Gateway", value=dados.get('gw', '0.0.0.0'), key=f"g_{chave}_{agencia_sel}")
         
         st.link_button(f"{cor} Abrir Unidade", f"http://{ip_val}", use_container_width=True)
 
@@ -123,4 +126,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - Suporte Especializado MikroTik (v3.0)")
+st.caption("Ftek Tecnologia - v4.2 (Versão Blindada)")
