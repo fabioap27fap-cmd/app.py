@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 # 1. Configuração da Página
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Com Timeout de 2s para evitar falso negativo)
+# 2. FUNÇÃO DE MONITORAMENTO (Otimizada para Celular/4G)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
@@ -22,7 +22,13 @@ def check_port(ip_port, manual_port=None, external_test=False):
             target_ip, target_port = ip_port, 80 
             
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(2.0) # Aumentado para 2s para operadoras lentas (Slow ISPs)
+        
+        # AJUSTE DE PACIÊNCIA: Celular no 4G/5G precisa de mais tempo
+        if manual_port == 8291:
+            s.settimeout(3.5) # 3.5s para Winbox (Evita erro falso no mobile)
+        else:
+            s.settimeout(2.0) # 2.0s para Link e Internet
+            
         result = s.connect_ex((target_ip, target_port))
         s.close()
         return result == 0, target_port
@@ -86,13 +92,13 @@ def run_checks(dados):
 
 # 5. SIDEBAR
 st.sidebar.title("🚀 Navegação Ftek")
-agencia_sel = st.sidebar.selectbox("Agência (Escolha ou Busque):", sorted(dados_agencias.keys()))
+agencia_sel = st.sidebar.selectbox("Agência (Busque ou Escolha):", sorted(dados_agencias.keys()))
 info = dados_agencias[agencia_sel]
 st.sidebar.divider()
 st.sidebar.info(f"🆔 MCU: {info['mcu']}")
 
 # 6. PAINEL PRINCIPAL
-st.markdown(f"<h3 style='text-align: center;'>Ftek Tecnologia: {agencia_sel}</h3>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='text-align: center;'>Painel Ftek: {agencia_sel}</h3>", unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
 def montar_card(dados, titulo, chave, cor):
@@ -117,4 +123,4 @@ with col1: montar_card(info['wan1'], "Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v6.0 (Base de Dados Integral)")
+st.caption("Ftek Tecnologia - v6.1 (Jordanésia OK | Timeout Otimizado)")
