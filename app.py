@@ -30,7 +30,7 @@ dados_agencias = {
     "Agf Jordanésia": {
         "mcu": "00424455", 
         "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.150.45", "user": "cliente@cliente", "pass": "cliente"},
-        "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "45.188.185.141", "user": "não sei", "pass": "não sei"}
+        "wan2": {"op": "Não Sei", "tipo": "PPPoE", "ip": "45.188.185.141", "user": "não sei", "pass": "não sei"}
     },
     "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
