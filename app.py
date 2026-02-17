@@ -2,15 +2,14 @@ import streamlit as st
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
-# 1. Configuração da Página
-st.set_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
+# 1. Configuração da Página - CORRIGIDO (Fixed)
+st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
 # 2. FUNÇÃO DE MONITORAMENTO (Lógica de Persistência - 3 Tentativas)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
     
-    # Identificação de IP e Porta
     try:
         if external_test:
             target_ip, target_port = "8.8.8.8", 53 
@@ -24,25 +23,22 @@ def check_port(ip_port, manual_port=None, external_test=False):
             target_ip, target_port = ip_port, 80 
     except: return False, 80
 
-    # Lógica de Re-tentativa (Retry Logic) para vencer a America Net no celular
+    # Retry Logic (Lógica de tentativa) para vencer oscilações no celular
     for _ in range(3): 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # Tempo maior para Winbox no celular (4.0s)
             timeout_val = 4.0 if target_port == 8291 else 2.5
             s.settimeout(timeout_val)
-            
             result = s.connect_ex((target_ip, target_port))
             s.close()
-            
             if result == 0:
-                return True, target_port # Se conectou, retorna OK imediatamente
+                return True, target_port 
         except:
-            continue # Se der erro de rede, tenta novamente (até 3x)
+            continue 
             
     return False, target_port
 
-# 3. BASE DE DADOS INTEGRAL - TODAS AS AGÊNCIAS (SEM CORTES)
+# 3. BASE DE DADOS INTEGRAL - TODAS AS AGÊNCIAS (Sem faltar nenhuma)
 dados_agencias = {
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
     "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
@@ -115,20 +111,20 @@ def montar_card(dados, titulo, chave, cor):
     (link_ok, _), (win_ok, _), (int_ok, _) = res
     with st.container(border=True):
         st.subheader(f"{titulo} ({dados.get('op')})")
-        st.write(f"Link: **{'✅ ONLINE' if link_ok else '❌ OFFLINE'}**")
-        st.write(f"Winbox: **{'✅ OK' if win_ok else '❌ ERRO'}**")
-        st.write(f"Internet: **{'✅ OK' if int_ok else '❌ OFF'}**")
+        st.write(f"Link Operadora: **{'✅ ONLINE' if link_ok else '❌ OFFLINE'}**")
+        st.write(f"Winbox MikroTik: **{'✅ OK' if win_ok else '❌ ERRO'}**")
+        st.write(f"Internet (Google): **{'✅ OK' if int_ok else '❌ OFF'}**")
         st.text_input("IP Técnico", value=dados.get('ip'), key=f"ip_{chave}_{agencia_sel}")
         if dados.get('tipo') == "PPPoE":
-            st.text_input("Usuário", value=dados.get('user'), key=f"u_{chave}_{agencia_sel}")
-            st.text_input("Senha", value=dados.get('pass'), type="password", key=f"p_{chave}_{agencia_sel}")
+            st.text_input("Usuário (User)", value=dados.get('user'), key=f"u_{chave}_{agencia_sel}")
+            st.text_input("Senha (Password)", value=dados.get('pass'), type="password", key=f"p_{chave}_{agencia_sel}")
         else:
-            st.text_input("Máscara", value=dados.get('mask'), key=f"m_{chave}_{agencia_sel}")
-            st.text_input("Gateway", value=dados.get('gw'), key=f"g_{chave}_{agencia_sel}")
+            st.text_input("Máscara (Mask)", value=dados.get('mask'), key=f"m_{chave}_{agencia_sel}")
+            st.text_input("Gateway (GW)", value=dados.get('gw'), key=f"g_{chave}_{agencia_sel}")
         st.link_button(f"{cor} Abrir Interface", f"http://{dados.get('ip')}", use_container_width=True)
 
-with col1: montar_card(info['wan1'], "Primário", "w1", "🔵")
-with col2: montar_card(info.get('wan2'), "Secundário", "w2", "🔴")
+with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
+with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v6.2 (Edição de Persistência | Todas as Agências)")
+st.caption("Ftek Tecnologia - v6.3 (Bug Fix: st.set_page_config)")
