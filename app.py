@@ -1,36 +1,31 @@
 import streamlit as st
 import socket
-from concurrent.futures import ThreadPoolExecutor
 
 # 1. Configuração da Página
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Fast Timeout & Threading)
+# 2. FUNÇÃO DE MONITORAMENTO (Link, Winbox e Internet 8.8.8.8)
 def check_port(ip_port, manual_port=None, external_test=False):
-    if not ip_port or ip_port == "0.0.0.0":
-        return False, 80
-    if external_test:
-        target_ip, target_port = "8.8.8.8", 53
-    elif manual_port:
-        target_port = manual_port
-        target_ip = ip_port.split(":")[0] if ":" in ip_port else ip_port
-    elif ":" in ip_port:
-        try:
+    try:
+        if external_test:
+            target_ip, target_port = "8.8.8.8", 53 
+        elif manual_port:
+            target_port = manual_port
+            target_ip = ip_port.split(":")[0] if ":" in ip_port else ip_port
+        elif ":" in ip_port:
             target_ip, target_port = ip_port.split(":")
             target_port = int(target_port)
-        except: return False, 80
-    else:
-        target_ip, target_port = ip_port, 80
-
-    try:
+        else:
+            target_ip, target_port = ip_port, 80 
+            
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1.0) 
+        s.settimeout(1.2) 
         result = s.connect_ex((target_ip, target_port))
         s.close()
-        return (result == 0), target_port
-    except: return False, target_port
+        return result == 0, target_port
+    except: return False, 80
 
-# 3. BASE DE DADOS INTEGRAL - TODAS AS UNIDADES FTEK
+# 3. BASE DE DADOS COMPLETA FTEK (CONFERIDA COM TODOS OS PONTOS REMOTOS)
 dados_agencias = {
     "Agf Aclimação": {"mcu": "00424345", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.155.10", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
@@ -77,48 +72,43 @@ dados_agencias = {
     "Agf Wluiz": {"mcu": "00424426", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.110.163", "mask": "255.255.255.0", "gw": "201.6.110.1"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "179.228.251.146", "user": "cliente@cliente", "pass": "cliente"}},
 }
 
-# 4. EXECUÇÃO PARALELA (Threading)
-def run_all_checks(dados):
-    if not dados: return None
-    ip = dados.get('ip', '0.0.0.0')
-    with ThreadPoolExecutor() as executor:
-        f1 = executor.submit(check_port, ip)
-        f2 = executor.submit(check_port, ip, manual_port=8291)
-        f3 = executor.submit(check_port, ip, external_test=True)
-    return f1.result(), f2.result(), f3.result()
-
-# 5. SIDEBAR
+# 4. MENU LATERAL (Sidebar)
 st.sidebar.title("🚀 Navegação Ftek")
 agencias_lista = sorted(dados_agencias.keys())
-agencia_sel = st.sidebar.selectbox("Agência:", agencias_lista)
+agencia_sel = st.sidebar.selectbox("Selecione a Agência:", agencias_lista)
 info = dados_agencias[agencia_sel]
 st.sidebar.divider()
 st.sidebar.info(f"🆔 MCU: {info['mcu']}")
 
-# 6. PAINEL PRINCIPAL
+# 5. CONTEÚDO PRINCIPAL
 st.markdown(f"<h3 style='text-align: center;'>Painel Operacional: {agencia_sel}</h3>", unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
 def montar_card(dados, titulo, chave, cor):
     if not dados: return
-    results = run_all_checks(dados)
-    (link_ok, _), (winbox_ok, _), (internet_ok, _) = results
     with st.container(border=True):
-        st.subheader(f"{titulo} ({dados.get('op')})")
-        st.write(f"Link: **{'✅ ONLINE' if link_ok else '❌ OFFLINE'}**")
-        st.write(f"Winbox: **{'✅ OK' if winbox_ok else '❌ ERRO'}**")
-        st.write(f"Internet: **{'✅ OK' if internet_ok else '❌ OFF'}**")
-        st.text_input("IP", value=dados.get('ip'), key=f"ip_{chave}_{agencia_sel}")
+        status_ok, porta_teste = check_port(dados.get('ip', '0.0.0.0'))
+        winbox_ok, _ = check_port(dados.get('ip', '0.0.0.0'), manual_port=8291)
+        internet_ok, _ = check_port(dados.get('ip', '0.0.0.0'), external_test=True)
+        
+        st.subheader(f"{titulo} ({dados.get('op', 'Link')})")
+        st.write(f"Link Operadora: **{'✅ ONLINE' if status_ok else '❌ OFFLINE'}** (Porta: {porta_teste})")
+        st.write(f"Winbox MikroTik: **{'✅ ACESSO OK' if winbox_ok else '❌ SEM ACESSO'}** (Porta: 8291)")
+        st.write(f"Internet (Google): **{'✅ COM NAVEGAÇÃO' if internet_ok else '❌ SEM NAVEGAÇÃO'}** (Porta: 53)")
+        
+        ip_val = st.text_input(f"Technical IP Address ({titulo})", value=dados.get('ip', '0.0.0.0'), key=f"ip_{chave}_{agencia_sel}")
+        
         if dados.get('tipo') == "PPPoE":
-            st.text_input("Usuário", value=dados.get('user'), key=f"u_{chave}_{agencia_sel}")
-            st.text_input("Senha", value=dados.get('pass'), type="password", key=f"p_{chave}_{agencia_sel}")
+            st.text_input("User (Usuário PPPoE)", value=dados.get('user', ''), key=f"u_{chave}_{agencia_sel}")
+            st.text_input("Password (Senha PPPoE)", value=dados.get('pass', ''), type="password", key=f"p_{chave}_{agencia_sel}")
         else:
-            st.text_input("Máscara", value=dados.get('mask'), key=f"m_{chave}_{agencia_sel}")
-            st.text_input("Gateway", value=dados.get('gw'), key=f"g_{chave}_{agencia_sel}")
-        st.link_button(f"{cor} Abrir Unidade", f"http://{dados.get('ip')}", use_container_width=True)
+            st.text_input("Subnet Mask (Máscara)", value=dados.get('mask', '255.255.255.0'), key=f"m_{chave}_{agencia_sel}")
+            st.text_input("Gateway (Gateway)", value=dados.get('gw', '0.0.0.0'), key=f"g_{chave}_{agencia_sel}")
+        
+        st.link_button(f"{cor} Abrir Unidade", f"http://{ip_val}", use_container_width=True)
 
-with col1: montar_card(info['wan1'], "Primário", "w1", "🔵")
-with col2: montar_card(info.get('wan2'), "Secundário", "w2", "🔴")
+with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
+with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
 st.caption("Ftek Tecnologia - v5.3 (BASE COMPLETA GARANTIDA)")
