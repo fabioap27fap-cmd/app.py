@@ -3,12 +3,14 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 
 # 1. Configuração da Página
-st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
+st.set_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Otimizada para Celular/4G)
+# 2. FUNÇÃO DE MONITORAMENTO (Lógica de Persistência - 3 Tentativas)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
+    
+    # Identificação de IP e Porta
     try:
         if external_test:
             target_ip, target_port = "8.8.8.8", 53 
@@ -20,21 +22,27 @@ def check_port(ip_port, manual_port=None, external_test=False):
             target_port = int(target_port)
         else:
             target_ip, target_port = ip_port, 80 
-            
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
-        # AJUSTE DE PACIÊNCIA: Celular no 4G/5G precisa de mais tempo
-        if manual_port == 8291:
-            s.settimeout(3.5) # 3.5s para Winbox (Evita erro falso no mobile)
-        else:
-            s.settimeout(2.0) # 2.0s para Link e Internet
-            
-        result = s.connect_ex((target_ip, target_port))
-        s.close()
-        return result == 0, target_port
-    except: return False, target_port
+    except: return False, 80
 
-# 3. BASE DE DADOS INTEGRAL - TODAS AS UNIDADES FTEK
+    # Lógica de Re-tentativa (Retry Logic) para vencer a America Net no celular
+    for _ in range(3): 
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # Tempo maior para Winbox no celular (4.0s)
+            timeout_val = 4.0 if target_port == 8291 else 2.5
+            s.settimeout(timeout_val)
+            
+            result = s.connect_ex((target_ip, target_port))
+            s.close()
+            
+            if result == 0:
+                return True, target_port # Se conectou, retorna OK imediatamente
+        except:
+            continue # Se der erro de rede, tenta novamente (até 3x)
+            
+    return False, target_port
+
+# 3. BASE DE DADOS INTEGRAL - TODAS AS AGÊNCIAS (SEM CORTES)
 dados_agencias = {
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
     "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
@@ -123,4 +131,4 @@ with col1: montar_card(info['wan1'], "Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v6.1 (Jordanésia OK | Timeout Otimizado)")
+st.caption("Ftek Tecnologia - v6.2 (Edição de Persistência | Todas as Agências)")
