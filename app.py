@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 # 1. Configuração da Página
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Rápida com Threading)
+# 2. FUNÇÃO DE MONITORAMENTO (Com Timeout de 2s para evitar falso negativo)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
@@ -22,13 +22,13 @@ def check_port(ip_port, manual_port=None, external_test=False):
             target_ip, target_port = ip_port, 80 
             
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1.0) 
+        s.settimeout(2.0) # Aumentado para 2s para operadoras lentas (Slow ISPs)
         result = s.connect_ex((target_ip, target_port))
         s.close()
         return result == 0, target_port
-    except: return False, 80
+    except: return False, target_port
 
-# 3. BASE DE DADOS INTEGRAL - TODAS AS UNIDADES FTEK (CONFERIDAS)
+# 3. BASE DE DADOS INTEGRAL - TODAS AS UNIDADES FTEK
 dados_agencias = {
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
     "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
@@ -117,4 +117,4 @@ with col1: montar_card(info['wan1'], "Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v5.9 (Painel Definitivo)")
+st.caption("Ftek Tecnologia - v6.0 (Base de Dados Integral)")
