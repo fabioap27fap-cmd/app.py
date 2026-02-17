@@ -2,10 +2,10 @@ import streamlit as st
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
-# 1. Configuração da Página - CORRIGIDO (Fixed)
+# 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Lógica de Persistência - 3 Tentativas)
+# 2. FUNÇÃO DE MONITORAMENTO (Ajustada para ser veloz no Stop)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
@@ -23,22 +23,29 @@ def check_port(ip_port, manual_port=None, external_test=False):
             target_ip, target_port = ip_port, 80 
     except: return False, 80
 
-    # Retry Logic (Lógica de tentativa) para vencer oscilações no celular
-    for _ in range(3): 
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            timeout_val = 4.0 if target_port == 8291 else 2.5
-            s.settimeout(timeout_val)
-            result = s.connect_ex((target_ip, target_port))
-            s.close()
-            if result == 0:
-                return True, target_port 
-        except:
-            continue 
+    # Primeira tentativa rápida (Fast attempt)
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1.2) # Se estiver bom, responde na hora
+        result = s.connect_ex((target_ip, target_port))
+        s.close()
+        if result == 0: return True, target_port
+    except: pass
+
+    # Só insiste se a primeira falhar (Retry logic para America Net/Celular)
+    if manual_port == 8291:
+        for _ in range(2): # Mais 2 tentativas
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(2.5) 
+                result = s.connect_ex((target_ip, target_port))
+                s.close()
+                if result == 0: return True, target_port
+            except: continue
             
     return False, target_port
 
-# 3. BASE DE DADOS INTEGRAL - TODAS AS AGÊNCIAS (Sem faltar nenhuma)
+# 3. BASE DE DADOS INTEGRAL FTEK (Sem faltar nenhuma)
 dados_agencias = {
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
     "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
@@ -127,4 +134,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v6.3 (Bug Fix: st.set_page_config)")
+st.caption("Ftek Tecnologia - v6.5 (Otimização de Velocidade & Stop)")
