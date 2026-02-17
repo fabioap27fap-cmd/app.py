@@ -1,12 +1,11 @@
 import streamlit as st
 import socket
-import time
 from concurrent.futures import ThreadPoolExecutor
 
 # 1. Configuração da Página
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Otimizada para não travar)
+# 2. FUNÇÃO DE MONITORAMENTO (Fast Timeout - 1.0s)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
@@ -23,7 +22,6 @@ def check_port(ip_port, manual_port=None, external_test=False):
     else:
         target_ip, target_port = ip_port, 80
 
-    # Timeout curto para o app entrar rápido
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(1.0) 
@@ -32,7 +30,7 @@ def check_port(ip_port, manual_port=None, external_test=False):
         return (result == 0), target_port
     except: return False, target_port
 
-# 3. BASE DE DADOS COMPLETA (FTEK - NÃO FALTA NENHUMA)
+# 3. BASE DE DADOS COMPLETA (FTEK - TODAS AS UNIDADES)
 dados_agencias = {
     "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
@@ -78,7 +76,7 @@ dados_agencias = {
     "Agf Silvio Romero": {"mcu": "00424460", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.252.169", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.126.99", "mask": "255.255.255.0", "gw": "201.6.126.1"}}
 }
 
-# 4. EXECUÇÃO PARALELA (Threadpool)
+# 4. EXECUÇÃO PARALELA (Threading)
 def run_all_checks(dados):
     if not dados: return None
     ip = dados.get('ip', '0.0.0.0')
@@ -88,9 +86,10 @@ def run_all_checks(dados):
         f3 = executor.submit(check_port, ip, external_test=True)
     return f1.result(), f2.result(), f3.result()
 
-# 5. SIDEBAR
+# 5. MENU LATERAL (Sidebar)
 st.sidebar.title("🚀 Navegação Ftek")
-agencia_sel = st.sidebar.selectbox("Agência:", sorted(dados_agencias.keys()))
+agencias_lista = sorted(dados_agencias.keys())
+agencia_sel = st.sidebar.selectbox("Busque ou escolha a Agência:", agencias_lista)
 info = dados_agencias[agencia_sel]
 st.sidebar.divider()
 st.sidebar.info(f"🆔 MCU: {info['mcu']}")
@@ -101,7 +100,7 @@ col1, col2 = st.columns(2)
 
 def montar_card(dados, titulo, chave, cor):
     if not dados: return
-    # Testes em tempo real ao selecionar a agência
+    # Rodando os testes sem travar a interface
     results = run_all_checks(dados)
     (link_ok, _), (winbox_ok, _), (internet_ok, _) = results
 
@@ -125,4 +124,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v5.0 (Versão Definitiva)")
+st.caption("Ftek Tecnologia - v5.1 (Versão Final)")
