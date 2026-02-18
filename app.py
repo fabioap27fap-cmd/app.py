@@ -48,7 +48,7 @@ def check_port(ip_port, manual_port=None, external_test=False):
 # 3. BASE DE DADOS INTEGRAL FTEK (Sem faltar nenhuma)
 dados_agencias = {
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
-    "Agf Barra Agui de Haia": {"mcu": "00000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "179.228.165.235", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.101.194", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}},
+    "Agf Aguia de Haia": {"mcu": "00000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "179.228.165.235", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.101.194", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}},
     "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
     "Agf Bonfiglioli Ponto Remoto": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.132.189", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Britânia": {"mcu": "00236543", "wan1": {"op": "Globa Tel", "tipo": "PPPoE", "ip": "138.97.242.43", "user": "2630@globaltel.com.br", "pass": "12345678"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.147.205", "user": "cliente@cliente", "pass": "cliente"}},
