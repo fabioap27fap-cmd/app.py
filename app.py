@@ -2,16 +2,16 @@ import streamlit as st
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
-# 1. CONFIGURAÇÃO DA PÁGINA
+# 1. CONFIGURAÇÃO DA PÁGINA (Deve ser a primeira linha de código st)
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Otimizada para Celular/America Net)
+# 2. FUNÇÃO DE MONITORAMENTO (Otimizada para Celular/4G)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
     
-    # Limpeza básica do IP (remove espaços ou quebras de linha acidentais)
-    ip_port = ip_port.strip()
+    # Limpeza profunda do IP (remove espaços, quebras de linha e tabs)
+    ip_port = "".join(ip_port.split())
     
     try:
         if external_test:
@@ -26,33 +26,23 @@ def check_port(ip_port, manual_port=None, external_test=False):
             target_ip, target_port = ip_port, 80 
     except: return False, 80
 
-    # Primeira tentativa rápida
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1.2)
-        result = s.connect_ex((target_ip, target_port))
-        s.close()
-        if result == 0: return True, target_port
-    except: pass
-
-    # Retry logic (Lógica de tentativa) para Winbox no celular/4G
-    if manual_port == 8291:
-        for _ in range(2):
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(3.0) 
-                result = s.connect_ex((target_ip, target_port))
-                s.close()
-                if result == 0: return True, target_port
-            except: continue
+    # Tentativas de conexão
+    for i in range(3 if target_port == 8291 else 1): 
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(3.5 if target_port == 8291 else 1.5)
+            result = s.connect_ex((target_ip, target_port))
+            s.close()
+            if result == 0: return True, target_port
+        except: continue
             
     return False, target_port
 
-# 3. BASE DE DADOS INTEGRAL FTEK (Com as novas agências)
+# 3. BASE DE DADOS INTEGRAL FTEK
 dados_agencias = {
     "Agf Águia de Haia": {"mcu": "00000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "179.228.165.235", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.101.194", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}},
-    "Agf Alto do Ipiranga": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.117.13 ", "mask": "255.255.255.0 /24", "gw": "201.6.117.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "201.93.94.175 ", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
-    "Agf Alto do Ipiranga Aréa Acéssoria": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": " 201.6.255.98 ", "mask": "255.255.255.0 /24", "gw": " 201.6.255.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "187.11.237.212", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
+    "Agf Alto do Ipiranga": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.117.13", "mask": "255.255.255.0 /24", "gw": "201.6.117.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "201.93.94.175", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
+    "Agf Alto do Ipiranga Aréa Acéssoria": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.255.98", "mask": "255.255.255.0 /24", "gw": "201.6.255.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "187.11.237.212", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
     "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
     "Agf Bonfiglioli Ponto Remoto": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.132.189", "user": "cliente@cliente", "pass": "cliente"}},
@@ -127,7 +117,7 @@ def montar_card(dados, titulo, chave, cor):
         st.write(f"Link Operadora: **{'✅ ONLINE' if link_ok else '❌ OFFLINE'}**")
         st.write(f"Winbox MikroTik: **{'✅ OK' if win_ok else '❌ ERRO'}**")
         st.write(f"Internet (Google): **{'✅ OK' if int_ok else '❌ OFF'}**")
-        st.text_input("IP Técnico", value=dados.get('ip'), key=f"ip_{chave}_{agencia_sel}")
+        st.text_input("IP Técnico", value=dados.get('ip').strip(), key=f"ip_{chave}_{agencia_sel}")
         if dados.get('tipo') == "PPPoE":
             st.text_input("Usuário (User)", value=dados.get('user'), key=f"u_{chave}_{agencia_sel}")
             st.text_input("Senha (Password)", value=dados.get('pass'), type="password", key=f"p_{chave}_{agencia_sel}")
@@ -140,4 +130,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v6.6 (Novas Unidades | Otimização Celular)")
+st.caption("Ftek Tecnologia - v6.7 (Base Atualizada | IPs Alto do Ipiranga OK)")
