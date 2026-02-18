@@ -5,10 +5,13 @@ from concurrent.futures import ThreadPoolExecutor
 # 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Ajustada para ser veloz no Stop)
+# 2. FUNÇÃO DE MONITORAMENTO (Otimizada para Celular/America Net)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
+    
+    # Limpeza básica do IP (remove espaços ou quebras de linha acidentais)
+    ip_port = ip_port.strip()
     
     try:
         if external_test:
@@ -23,21 +26,21 @@ def check_port(ip_port, manual_port=None, external_test=False):
             target_ip, target_port = ip_port, 80 
     except: return False, 80
 
-    # Primeira tentativa rápida (Fast attempt)
+    # Primeira tentativa rápida
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1.2) # Se estiver bom, responde na hora
+        s.settimeout(1.2)
         result = s.connect_ex((target_ip, target_port))
         s.close()
         if result == 0: return True, target_port
     except: pass
 
-    # Só insiste se a primeira falhar (Retry logic para America Net/Celular)
+    # Retry logic (Lógica de tentativa) para Winbox no celular/4G
     if manual_port == 8291:
-        for _ in range(2): # Mais 2 tentativas
+        for _ in range(2):
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(2.5) 
+                s.settimeout(3.0) 
                 result = s.connect_ex((target_ip, target_port))
                 s.close()
                 if result == 0: return True, target_port
@@ -45,12 +48,12 @@ def check_port(ip_port, manual_port=None, external_test=False):
             
     return False, target_port
 
-# 3. BASE DE DADOS INTEGRAL FTEK (Sem faltar nenhuma)
+# 3. BASE DE DADOS INTEGRAL FTEK (Com as novas agências)
 dados_agencias = {
-    "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
-    "Agf Alto do Ipiranga": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.255.98 ", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "179.228.165.235", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
+    "Agf Águia de Haia": {"mcu": "00000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "179.228.165.235", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.101.194", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}},
+    "Agf Alto do Ipiranga": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.255.98", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "179.228.165.235", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Alto do Ipiranga Aréa Acéssoria": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.101.194", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "187.11.237.212", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
-    "Agf Aguia de Haia": {"mcu": "00000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "179.228.165.235", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.101.194", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}},
+    "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
     "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "255.255.255.0", "gw": "201.6.106.1"}},
     "Agf Bonfiglioli Ponto Remoto": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.132.189", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Britânia": {"mcu": "00236543", "wan1": {"op": "Globa Tel", "tipo": "PPPoE", "ip": "138.97.242.43", "user": "2630@globaltel.com.br", "pass": "12345678"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.147.205", "user": "cliente@cliente", "pass": "cliente"}},
@@ -131,10 +134,10 @@ def montar_card(dados, titulo, chave, cor):
         else:
             st.text_input("Máscara (Mask)", value=dados.get('mask'), key=f"m_{chave}_{agencia_sel}")
             st.text_input("Gateway (GW)", value=dados.get('gw'), key=f"g_{chave}_{agencia_sel}")
-        st.link_button(f"{cor} Abrir Interface", f"http://{dados.get('ip')}", use_container_width=True)
+        st.link_button(f"{cor} Abrir Interface", f"http://{dados.get('ip').strip()}", use_container_width=True)
 
 with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v6.5 (Otimização de Velocidade & Stop)")
+st.caption("Ftek Tecnologia - v6.6 (Novas Unidades | Otimização Celular)")
