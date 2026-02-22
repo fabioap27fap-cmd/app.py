@@ -10,7 +10,7 @@ def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
     
-    # Limpeza profunda de espaços e quebras de linha (Deep Cleaning)
+    # Limpeza profunda de espaços e quebras de linha
     ip_port = "".join(ip_port.split())
     
     try:
@@ -62,7 +62,7 @@ dados_agencias = {
     "Agf Itaberába": {"mcu": "00423154", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.104.170:1010", "mask": "255.255.255.0", "gw": "201.6.104.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "177.189.223.190:1010", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Jaraguá": {"mcu": "00424335", "wan1": {"op": "Vivo", "tipo": "PPPoE", "ip": "191.13.225.209", "user": "digita.post", "pass": "cliente"}, "wan2": {"op": "CLARO", "tipo": "FIXO", "ip": "187.122.106.195", "mask": "255.255.255.0", "gw": "201.6.107.1"}},
     "Agf João Dias": {"mcu": "0000000", "wan1": {"op": "Vivo", "tipo": "PPPoE", "ip": "179.111.200.4", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "CLARO", "tipo": "FIXO", "ip": "187.122.106.195", "mask": "255.255.255.0", "gw": "187.122.106.195"}},
-    "Agf Jordanésia": {"mcu": "00424455", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.146.196", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Não Sei", "tipo": "PPPoE", "ip": "45.188.185.141", "user": "não sei", "pass": "não sei"}},
+    "Agf Jordanésia": {"mcu": "236564", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.146.196", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Não Sei", "tipo": "PPPoE", "ip": "45.188.185.141", "user": "não sei", "pass": "não sei"}},
     "Agf Lajeado": {"mcu": "00424526", "wan1": {"op": "Tim", "tipo": "FIXO", "ip": "177.149.87.18", "mask": "255.255.255.0", "gw": "0.0.0.0"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.247.247", "mask": "255.255.255.0", "gw": "201.6.247.247"}},
     "Agf Mandaqui": {"mcu": "00236565", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "201.69.120.142", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.216", "mask": "255.255.255.0", "gw": "201.6.98.216"}},
     "Agf Maria Cândida": {"mcu": "00424400", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.118.90", "mask": "255.255.255.0", "gw": "201.6.118.90"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.68.158.15", "user": "cliente@cliente", "pass": "cliente"}},
@@ -131,4 +131,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v6.8 (Full Database | Fix Hibernate)")
+st.caption("Ftek Tecnologia - v7.0 (Jordanésia MCU Fix | Clean Code)")
