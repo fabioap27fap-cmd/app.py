@@ -45,11 +45,11 @@ dados_agencias = {
     "Agf Alto do Ipiranga": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.117.13", "mask": "255.255.255.0 /24", "gw": "201.6.117.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "201.93.94.175", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Alto do Ipiranga Aréa Acéssoria": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.255.98", "mask": "255.255.255.0 /24", "gw": "201.6.255.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "187.11.237.212", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
-    "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Zaap", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "login:rojocorreio.1120471,senha:54972568", "gw": "201.6.106.1"}},
+    "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Zaap", "tipo": "PPPoE", "ip": "201.6.106.126", "user": "rojocorreio.1120471", "pass": "54972568"}},
     "Agf Bonfiglioli Ponto Remoto": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.132.189", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Britânia": {"mcu": "00236543", "wan1": {"op": "Globa Tel", "tipo": "PPPoE", "ip": "138.97.242.43", "user": "2630@globaltel.com.br", "pass": "12345678"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.147.205", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Campo Grande": {"mcu": "00424450", "wan1": {"op": "Vivo Lp", "tipo": "FIXO", "ip": "189.109.212.18", "mask": "255.255.255.248", "gw": "189.109.212.17"}, "wan2": {"op": "Algar", "tipo": "FIXO", "ip": "177.69.127.110", "mask": "255.255.255.252", "gw": "177.69.127.109"}},
-    "Agf Carapicuíba": {"mcu": "00424395", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.170.50.148", "user": "cliente@cliente", "pass": "cliente"}},"wan2": {"op": "Zap", "tipo": "PPPoE", "ip": "190.123.8.64", "user": "rojocorreio.1120471", "pass": "54972568"}},
+    "Agf Carapicuíba": {"mcu": "00424395", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.170.50.148", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Zap", "tipo": "PPPoE", "ip": "190.123.8.64", "user": "rojocorreio.1120471", "pass": "54972568"}},
     "Agf Cidade Dutra": {"mcu": "423152", "wan1": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.159.203", "mask": "255.255.255.0", "gw": "201.6.159.1"}},
     "Agf Cidade Tiradentes": {"mcu": "00424415", "wan1": {"op": "FIXO", "tipo": "FIXO", "ip": "138.36.59.138", "mask": "255.255.255.252", "gw": "138.36.59.137"}, "wan2": {"op": "FIXO", "tipo": "FIXO", "ip": "177.135.153.154", "mask": "255.255.255.248", "gw": "177.135.153.153"}},
     "Agf Clínicas": {"mcu": "00424368", "wan1": {"op": "Vivo", "tipo": "PPPoE", "ip": "177.26.125.184", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.119.15", "mask": "255.255.255.0", "gw": "201.6.119.1"}},
@@ -131,4 +131,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v7.0 (Jordanésia MCU Fix | Clean Code)")
+st.caption("Ftek Tecnologia - v7.1 (Syntax Fix | Carapicuíba & Bonfiglioli OK)")
