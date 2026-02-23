@@ -45,7 +45,7 @@ dados_agencias = {
     "Agf Alto do Ipiranga": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.117.13", "mask": "255.255.255.0 /24", "gw": "201.6.117.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "201.93.94.175", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Alto do Ipiranga Aréa Acéssoria": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.255.98", "mask": "255.255.255.0 /24", "gw": "201.6.255.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "187.11.237.212", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
     "Agf Barra Funda": {"mcu": "00424371", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.139.163.26", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.98.218", "mask": "255.255.255.0", "gw": "201.6.98.1"}},
-    "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Zaap", "tipo": "PPPoE", "ip": "201.6.106.126", "user": "rojocorreio.1120471", "pass": "54972568"}},
+    "Agf Bonfiglioli": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "177.118.177.14", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Zaap", "tipo": "FIXO", "ip": "201.6.106.126", "mask": "login:rojocorreio.1120471,senha:54972568", "gw": "201.6.106.1"}},
     "Agf Bonfiglioli Ponto Remoto": {"mcu": "00424416", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.11.132.189", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Britânia": {"mcu": "00236543", "wan1": {"op": "Globa Tel", "tipo": "PPPoE", "ip": "138.97.242.43", "user": "2630@globaltel.com.br", "pass": "12345678"}, "wan2": {"op": "VIVO", "tipo": "PPPoE", "ip": "187.35.147.205", "user": "cliente@cliente", "pass": "cliente"}},
     "Agf Campo Grande": {"mcu": "00424450", "wan1": {"op": "Vivo Lp", "tipo": "FIXO", "ip": "189.109.212.18", "mask": "255.255.255.248", "gw": "189.109.212.17"}, "wan2": {"op": "Algar", "tipo": "FIXO", "ip": "177.69.127.110", "mask": "255.255.255.252", "gw": "177.69.127.109"}},
@@ -131,4 +131,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v7.1 (Syntax Fix [Ultima Versão)")
+st.caption("Ftek Tecnologia - v7.2 (Syntax Fix | Carapicuíba & Jordanésia OK)")
