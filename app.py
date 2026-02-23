@@ -131,4 +131,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v7.1 (Syntax Fix | Carapicuíba & Bonfiglioli OK)")
+st.caption("Ftek Tecnologia - v7.1 (Syntax Fix [Ultima Versão)")
