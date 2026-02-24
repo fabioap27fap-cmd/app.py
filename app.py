@@ -2,36 +2,35 @@ import streamlit as st
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
-# 1. CONFIGURAÇÃO DA PÁGINA (Sempre a primeira instrução Streamlit)
+# 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Ftek - Suporte AGF", layout="wide", page_icon="🚀")
 
-# 2. FUNÇÃO DE MONITORAMENTO (Ajustada para Velocidade e Celular)
+# 2. FUNÇÃO DE MONITORAMENTO (Inteligente para Portas)
 def check_port(ip_port, manual_port=None, external_test=False):
     if not ip_port or ip_port == "0.0.0.0":
         return False, 80
     
-    # Limpeza profunda de espaços e quebras de linha
     ip_port = "".join(ip_port.split())
     
     try:
         if external_test:
             target_ip, target_port = "8.8.8.8", 53 
-        elif manual_port:
-            target_port = manual_port
-            target_ip = ip_port.split(":")[0] if ":" in ip_port else ip_port
         elif ":" in ip_port:
-            target_ip, target_port = ip_port.split(":")
-            target_port = int(target_port)
+            # Se o IP já tem porta (ex: :1010), ele usa ela e ignora o manual_port
+            parts = ip_port.split(":")
+            target_ip = parts[0]
+            target_port = int(parts[1])
         else:
-            target_ip, target_port = ip_port, 80 
+            # Se não tem porta no IP, usa a manual (8291) ou padrão (80)
+            target_ip = ip_port
+            target_port = manual_port if manual_port else 80
     except: return False, 80
 
-    # Lógica de tentativa: 1x rápida para tudo, 3x para Winbox (Celular/America Net)
-    max_tries = 3 if target_port == 8291 else 1
-    for i in range(max_tries):
+    # Lógica de tentativa (Retry)
+    for i in range(3):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(3.5 if target_port == 8291 else 1.5)
+            s.settimeout(3.5)
             result = s.connect_ex((target_ip, target_port))
             s.close()
             if result == 0: return True, target_port
@@ -39,7 +38,7 @@ def check_port(ip_port, manual_port=None, external_test=False):
             
     return False, target_port
 
-# 3. BASE DE DADOS INTEGRAL FTEK
+# 3. BASE DE DADOS INTEGRAL FTEK (Com Carapicuíba :1010)
 dados_agencias = {
     "Agf Águia de Haia": {"mcu": "00000000", "wan1": {"op": "VIVO", "tipo": "PPPoE", "ip": "179.228.165.235", "user": "cliente@cliente", "pass": "cliente"}, "wan2": {"op": "Claro", "tipo": "FIXO", "ip": "201.6.101.194", "mask": "255.255.255.0 /24", "gw": "201.6.101.1"}},
     "Agf Alto do Ipiranga": {"mcu": "0000000", "wan1": {"op": "CLARO", "tipo": "FIXO", "ip": "201.6.117.13", "mask": "255.255.255.0 /24", "gw": "201.6.117.1"}, "wan2": {"op": "VIVO", "tipo": "FIXO", "ip": "201.93.94.175", "mask": "255.255.255.0", "gw": "0.0.0.0"}},
@@ -112,11 +111,11 @@ col1, col2 = st.columns(2)
 def montar_card(dados, titulo, chave, cor):
     if not dados: return
     res = run_checks(dados)
-    (link_ok, _), (win_ok, _), (int_ok, _) = res
+    (link_ok, _), (win_ok, port_usada), (int_ok, _) = res
     with st.container(border=True):
         st.subheader(f"{titulo} ({dados.get('op')})")
         st.write(f"Link Operadora: **{'✅ ONLINE' if link_ok else '❌ OFFLINE'}**")
-        st.write(f"Winbox MikroTik: **{'✅ OK' if win_ok else '❌ ERRO'}**")
+        st.write(f"Winbox (Porta {port_usada}): **{'✅ OK' if win_ok else '❌ ERRO'}**")
         st.write(f"Internet (Google): **{'✅ OK' if int_ok else '❌ OFF'}**")
         st.text_input("IP Técnico", value=dados.get('ip').strip(), key=f"ip_{chave}_{agencia_sel}")
         if dados.get('tipo') == "PPPoE":
@@ -131,4 +130,4 @@ with col1: montar_card(info['wan1'], "Link Primário", "w1", "🔵")
 with col2: montar_card(info.get('wan2'), "Link Secundário", "w2", "🔴")
 
 st.divider()
-st.caption("Ftek Tecnologia - v7.2 (Syntax Fix | Carapicuíba & Jordanésia OK)")
+st.caption("Ftek Tecnologia - v7.5 (Suporte a Porta Customizada - Carapicuíba OK)")
